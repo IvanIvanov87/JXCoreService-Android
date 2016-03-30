@@ -116,7 +116,7 @@ public class jxcore {
   public void Initialize(Context context, String home, String path, String mainFileName)
   {
 
-    Log.d(LOG_TAG, "jxcore initialized with taskOptions: " + " home: "+home);
+    Log.d(LOG_TAG, "jxcore initialized with taskOptions: " + " home: " + home);
     Log.d(LOG_TAG, "JXCore Java thread id: "+Thread.currentThread().getId());
 
     StringBuilder assets = prepareAssets(context, path);
@@ -162,7 +162,7 @@ public class jxcore {
             else
               assets.append(",");
             int size = FileManager.aproxFileSize(context, name.substring(7));
-            assets.append("\"" + name.substring(14) + "\":" + size);
+            assets.append("\"" + name.substring(path.length() + 6) + "\":" + size);
           }
         }
       } finally {
@@ -171,6 +171,7 @@ public class jxcore {
     } catch (Exception e) {
     }
     assets.append("}");
+    Log.i(LOG_TAG, "Prepare Assets: " + assets.toString());
     return assets;
   }
 }

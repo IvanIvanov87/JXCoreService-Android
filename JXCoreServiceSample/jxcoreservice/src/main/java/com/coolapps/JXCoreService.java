@@ -30,7 +30,7 @@ public class JXCoreService extends Service {
 
         jxcore jx_handler = new jxcore();
         jx_handler.setNativeContext(context, context.getAssets());
-        jx_handler.Initialize(context, context.getFilesDir().getAbsolutePath(), path, readFileName);
+        jx_handler.Initialize(context, context.getFilesDir().getAbsolutePath() + path, path, readFileName);
     }
 
     @Nullable
@@ -58,6 +58,8 @@ public class JXCoreService extends Service {
                 return;
             }
         }
+
+        Log.i(LOG_TAG, "Starting JXCore Service");
 
         if (_path != null)
         {
