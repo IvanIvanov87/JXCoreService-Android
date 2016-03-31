@@ -3,7 +3,6 @@
 package io.jxcore.node;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
@@ -12,19 +11,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-/**
- * Created by oriharel on 5/3/15.
- */
 @SuppressLint("DefaultLocale")
 public class FileManager {
-    public static String readFile(Context context, String location) {
-        return readFile(context, location, "UTF-8");
+
+    public static String readFile(String location) {
+        return readFile(location, "UTF-8");
     }
 
-    public static String readFile(Context context, String location, String encoding) {
+    public static String readFile(String location, String encoding) {
         StringBuilder sb = new StringBuilder();
         try {
-            AssetManager asm = context.getAssets();
+            AssetManager asm = jxcore.activity.getBaseContext().getAssets();
             BufferedReader br = new BufferedReader(new InputStreamReader(
                     asm.open(location), encoding));
 
@@ -44,10 +41,10 @@ public class FileManager {
         return sb.toString();
     }
 
-    public static int aproxFileSize(Context context, String location) {
+    public static int aproxFileSize(String location) {
         int size = 0;
         try {
-            AssetManager asm = context.getAssets();
+            AssetManager asm = jxcore.activity.getBaseContext().getAssets();
             InputStream st = asm.open(location, AssetManager.ACCESS_UNKNOWN);
             size = st.available();
             st.close();

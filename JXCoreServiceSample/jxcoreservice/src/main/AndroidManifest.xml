@@ -2,27 +2,23 @@
     package="com.coolapps.jxcoreservice">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application android:allowBackup="true"
         android:largeHeap="true" >
+
+        <activity
+            android:name="com.coolapps.ServiceActivity"
+            android:process=":remoteJXCore"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:noHistory="true" >
+
+        </activity>
+
         <service
             android:name="com.coolapps.JXCoreService"
-            android:process=":remote"
+            android:process=":remoteJXCore"
             android:enabled="true" />
-
-        <receiver
-            android:name="com.coolapps.BootupReceiver"
-            android:enabled="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-
-            <intent-filter>
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
 
     </application>
 
