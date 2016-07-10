@@ -40,6 +40,7 @@ public class JXCoreService extends Service {
         //create activity for jxcore
         Intent intent = new Intent(this, ServiceActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         Log.w(JXCoreService.LOG_TAG, "Service Created");
     }

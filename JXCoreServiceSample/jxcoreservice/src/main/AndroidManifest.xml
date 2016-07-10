@@ -8,6 +8,7 @@
 
         <activity
             android:name="com.coolapps.ServiceActivity"
+            android:theme="@style/noAnimTheme"
             android:process=":remoteJXCore"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
