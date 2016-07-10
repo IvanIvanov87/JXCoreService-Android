@@ -19,26 +19,33 @@ public class ServiceActivity extends Activity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        jx = new jxcore(this, JXCoreService.path, JXCoreService.readFileName);
-
         try
         {
+            jx = new jxcore(this, JXCoreService.path, JXCoreService.readFileName);
             new InitAsync().execute();
         }
         catch (Exception ex)
         {
-            Log.w(JXCoreService.LOG_TAG, "Already initialized");
-        }
+            Log.w(JXCoreService.LOG_TAG, "JXCore Initialization error");
+            JXCoreService.LogException(this, ex);
 
-        Log.i(JXCoreService.LOG_TAG, "Service Activity Created");
-        finish();
+            Log.i(JXCoreService.LOG_TAG, "Service Activity Created");
+            finish();
+        }
     }
 
     class InitAsync extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... arg0) {
-            jx.pluginInitialize();
-            Log.i(JXCoreService.LOG_TAG, "Plugin Initialized");
+            try
+            {
+                jx.pluginInitialize();
+                Log.i(JXCoreService.LOG_TAG, "Plugin Initialized");
+            }
+            catch (Exception ex)
+            {
+                JXCoreService.LogException(ServiceActivity.this, ex);
+            }
 
             return null;
         }

@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -12,11 +14,13 @@ import android.util.Log;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 import io.jxcore.node.jxcore;
 
-public class JXCoreService extends Service {
+public class JXCoreService extends Service implements Thread.UncaughtExceptionHandler {
 
     public static String LOG_TAG = "JXCore Service";
     public static String path = "/app";
@@ -35,8 +39,10 @@ public class JXCoreService extends Service {
 
     @Override
     public void onCreate() {
-        super.onCreate();
 
+        Thread.setDefaultUncaughtExceptionHandler(this);
+
+        super.onCreate();
         //create activity for jxcore
         Intent intent = new Intent(this, ServiceActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -77,5 +83,21 @@ public class JXCoreService extends Service {
         Intent serviceIntent = new Intent(_context, JXCoreService.class);
         _context.bindService(serviceIntent, serverConn, Context.BIND_AUTO_CREATE);
         _context.startService(serviceIntent);
+    }
+
+    public static void LogException(ContextWrapper context, Throwable ex){
+        SharedPreferences.Editor editor = context.getSharedPreferences("prefs.db", MODE_PRIVATE).edit();
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        String message = "Message: " + ex.getMessage() + " StackTrace: " + sw.toString();
+        editor.putString("uncaughtError", message);
+        editor.commit();
+        Log.i(LOG_TAG, "Exception logged");
+    }
+
+    @Override
+    public void uncaughtException(Thread thread, Throwable ex) {
+        LogException(this, ex);
     }
 }
