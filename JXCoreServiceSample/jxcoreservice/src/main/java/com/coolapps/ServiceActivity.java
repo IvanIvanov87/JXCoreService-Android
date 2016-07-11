@@ -23,14 +23,17 @@ public class ServiceActivity extends Activity
         {
             jx = new jxcore(this, JXCoreService.path, JXCoreService.readFileName);
             new InitAsync().execute();
+
+            Log.i(JXCoreService.LOG_TAG, "Service Activity Created");
+            finish();
         }
         catch (Exception ex)
         {
             Log.w(JXCoreService.LOG_TAG, "JXCore Initialization error");
             JXCoreService.LogException(this, ex);
 
-            Log.i(JXCoreService.LOG_TAG, "Service Activity Created");
-            finish();
+            //Log.i(JXCoreService.LOG_TAG, "Service Activity Created");
+            //finish();
         }
     }
 
