@@ -2,6 +2,10 @@
 
 package io.jxcore.node;
 
+import io.jxcore.node.jxcore.JXcoreCallback;
+
+import java.util.ArrayList;
+
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -9,10 +13,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
-
-import java.util.ArrayList;
-
-import io.jxcore.node.jxcore.JXcoreCallback;
 
 public class JXMobile {
   public static void Initialize() {
@@ -31,7 +31,7 @@ public class JXMobile {
       @SuppressLint("NewApi")
       @Override
       public void Receiver(ArrayList<Object> params, String callbackId) {
-        String path = jxcore.activity.getBaseContext().getFilesDir()
+        String path = jxcore.context.getFilesDir()
             .getAbsolutePath();
         jxcore.CallJSMethod(callbackId, "\"" + path + "\"");
       }
@@ -41,8 +41,8 @@ public class JXMobile {
       @SuppressLint("NewApi")
       @Override
       public void Receiver(ArrayList<Object> params, String callbackId) {
-        ConnectivityManager cm = (ConnectivityManager) jxcore.activity
-            .getBaseContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) jxcore.context
+            .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         String info = "{\"NotConnected\":1}";
         NetworkInfo[] netInfo = cm.getAllNetworkInfo();
@@ -105,8 +105,8 @@ public class JXMobile {
       @Override
       public void Receiver(ArrayList<Object> params, String callbackId) {
         Boolean enabled = (Boolean) params.get(0);
-        WifiManager wifiManager = (WifiManager) jxcore.activity
-            .getBaseContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = (WifiManager) jxcore.context
+            .getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(enabled);
         
         if(enabled) {

@@ -2,9 +2,9 @@
 
 package io.jxcore.node;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -50,27 +50,21 @@ public class jxcore {
 
   public native long callCBArray(String event_name, Object[] arr, int size);
 
-  public static String LOGTAG = "JX-Core";
-  public static Activity activity = null;
-  public static String path = "";
-  public static String readFileName = "";
+  public static String LOGTAG = "JX-Cordova";
+  public static Context context = null;
   public static jxcore addon;
+
+  public static Handler mainHandler = null;
 
   static Map<String, JXcoreCallback> java_callbacks;
   private List<JXFunctions> customJXFunctions;
   public static Handler handler = null;
   public static boolean app_paused = false;
 
-  public jxcore(Activity _activity, String _path, String _readFileName){
-    this.activity = _activity;
-    path = _path;
-    readFileName = _readFileName;
+  public jxcore(Context context){
+    jxcore.context = context;
+    mainHandler = new Handler(context.getMainLooper());
     customJXFunctions = new ArrayList<>();
-  }
-
-  public void stop()
-  {
-    stopEngine();
   }
 
   public void addJXCustomFuctions(JXFunctions jxFunctions){
@@ -107,10 +101,10 @@ public class jxcore {
   }
 
   public void pluginInitialize() {
-    final boolean new_instance = activity == null;
+    final boolean new_instance = context == null;
 
     if (!new_instance) {
-      setNativeContext(activity.getBaseContext(), activity.getAssets());
+      setNativeContext(context, context.getAssets());
     } else {
       Log.d(LOGTAG, "jxcore cordova android initializing");
     }
@@ -125,23 +119,16 @@ public class jxcore {
       jxFunctions.registerFunction();
     }
 
-      try
-      {
-          activity.runOnUiThread(new Runnable() {
-              @Override
-              public void run() {
-                  startProgress();
-              }
-          });
+    mainHandler.post(new Runnable() {
+      @Override
+      public void run() {
+        startProgress();
       }
-      catch (Exception ex)
-      {
-          Log.w("JXCoreService", "Unable to run on UI thread");
-      }
+    });
   }
 
   private static void startProgress() {
-    addon.Initialize(activity.getBaseContext().getFilesDir().getAbsolutePath());
+    addon.Initialize(context.getFilesDir().getAbsolutePath());
 
     Runnable runnable = new Runnable() {
       @Override
@@ -159,7 +146,7 @@ public class jxcore {
       handler.getLooper().quit();
     }
 
-    handler = new Handler(activity.getMainLooper());
+    handler = new Handler(context.getMainLooper());
     handler.postDelayed(runnable, 5);
   }
 
@@ -212,7 +199,7 @@ public class jxcore {
     }
 
     if (Looper.myLooper() != Looper.getMainLooper()) {
-      activity.runOnUiThread(jxcore.addon.new CoreRunable(id, args) {
+      mainHandler.post(jxcore.addon.new CoreRunable(id, args) {
         @Override
         public void run() {
           callJSMethod(callback_id_, params_);
@@ -232,7 +219,7 @@ public class jxcore {
     }
 
     if (Looper.myLooper() != Looper.getMainLooper()) {
-      activity.runOnUiThread(jxcore.addon.new CoreRunable(id, json) {
+      mainHandler.post(jxcore.addon.new CoreRunable(id, json) {
         @Override
         public void run() {
           callJSMethod(callback_id_, str_param_);
@@ -262,13 +249,13 @@ public class jxcore {
     boolean first_entry = true;
     try {
       ZipFile zf = new ZipFile(
-          activity.getBaseContext().getApplicationInfo().sourceDir);
+          context.getApplicationInfo().sourceDir);
       try {
         for (Enumeration<? extends ZipEntry> e = zf.entries(); e
             .hasMoreElements();) {
           ZipEntry ze = e.nextElement();
           String name = ze.getName();
-          if (name.startsWith("assets" + path)) {
+          if (name.startsWith("assets/www/jxcore/")) {
             if (first_entry)
               first_entry = false;
             else
@@ -284,15 +271,18 @@ public class jxcore {
     }
     assets.append("}");
 
-    prepareEngine(home + path, assets.toString());
+    prepareEngine(home + "/www/jxcore", assets.toString());
 
-    String mainFile = FileManager.readFile(readFileName);
+    String mainFile = FileManager.readFile("jxcore_cordova.js");
 
     String data = "process.setPaths = function(){ process.cwd = function() { return '"
         + home
-        + path + "';};\n"
+        + "/www/jxcore';};\n"
         + "process.userPath ='"
-        + activity.getBaseContext().getFilesDir().getAbsolutePath()
+        + context.getFilesDir().getAbsolutePath()
+        + "';\n"
+        + "process.extPath ='"
+        + Environment.getExternalStorageDirectory().getPath()
         + "';\n"
         + "};" + mainFile;
 

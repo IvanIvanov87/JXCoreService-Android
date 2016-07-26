@@ -8,11 +8,7 @@
 
         <activity
             android:name="com.coolapps.ServiceActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:process=":remoteJXCore"
-            android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
-            android:noHistory="true" >
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
 
         </activity>
 

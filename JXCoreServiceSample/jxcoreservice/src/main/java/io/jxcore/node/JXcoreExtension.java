@@ -8,6 +8,8 @@
 
 package io.jxcore.node;
 
+import io.jxcore.node.jxcore.JXcoreCallback;
+import java.util.ArrayList;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Point;
@@ -15,19 +17,15 @@ import android.provider.Settings.SettingNotFoundException;
 import android.view.Display;
 import android.view.WindowManager;
 
-import java.util.ArrayList;
-
-import io.jxcore.node.jxcore.JXcoreCallback;
-
 public class JXcoreExtension {
   public static void LoadExtensions() {
     jxcore.RegisterMethod("ScreenInfo", new JXcoreCallback() {
       @SuppressLint("NewApi")
       @Override
       public void Receiver(ArrayList<Object> params, String callbackId) {
-        Context context = jxcore.activity.getBaseContext();
+        Context context = jxcore.context;
         WindowManager wm = (WindowManager) context
-                .getSystemService(Context.WINDOW_SERVICE);
+            .getSystemService(Context.WINDOW_SERVICE);
         Display display = wm.getDefaultDisplay();
 
         Point outSize = new Point();
@@ -47,13 +45,13 @@ public class JXcoreExtension {
       @SuppressLint("NewApi")
       @Override
       public void Receiver(ArrayList<Object> params, String callbackId) {
-        Context context = jxcore.activity.getBaseContext();
+        Context context = jxcore.context;
 
         int br;
         try {
           br = android.provider.Settings.System.getInt(
-                  context.getContentResolver(),
-                  android.provider.Settings.System.SCREEN_BRIGHTNESS);
+              context.getContentResolver(),
+              android.provider.Settings.System.SCREEN_BRIGHTNESS);
         } catch (SettingNotFoundException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();

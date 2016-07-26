@@ -2,14 +2,14 @@
 
 package io.jxcore.node;
 
-import android.annotation.SuppressLint;
-import android.content.res.AssetManager;
-import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import android.annotation.SuppressLint;
+import android.content.res.AssetManager;
+import android.util.Log;
 
 @SuppressLint("DefaultLocale")
 public class FileManager {
@@ -21,7 +21,7 @@ public class FileManager {
     public static String readFile(String location, String encoding) {
         StringBuilder sb = new StringBuilder();
         try {
-            AssetManager asm = jxcore.activity.getBaseContext().getAssets();
+            AssetManager asm = jxcore.context.getAssets();
             BufferedReader br = new BufferedReader(new InputStreamReader(
                     asm.open(location), encoding));
 
@@ -44,7 +44,7 @@ public class FileManager {
     public static int aproxFileSize(String location) {
         int size = 0;
         try {
-            AssetManager asm = jxcore.activity.getBaseContext().getAssets();
+            AssetManager asm = jxcore.context.getAssets();
             InputStream st = asm.open(location, AssetManager.ACCESS_UNKNOWN);
             size = st.available();
             st.close();
