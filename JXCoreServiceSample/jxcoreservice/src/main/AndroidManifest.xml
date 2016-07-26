@@ -6,12 +6,6 @@
     <application android:allowBackup="true"
         android:largeHeap="true" >
 
-        <activity
-            android:name="com.coolapps.ServiceActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar">
-
-        </activity>
-
         <service
             android:name="com.coolapps.JXCoreService"
             android:process=":remoteJXCore"

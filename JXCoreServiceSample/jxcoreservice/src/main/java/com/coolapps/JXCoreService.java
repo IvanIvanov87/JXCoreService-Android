@@ -3,16 +3,19 @@ package com.coolapps;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.content.ServiceConnection;
 import android.content.ComponentName;
+
+import com.android.jxcore.JXcore;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -20,84 +23,92 @@ import java.util.List;
 
 import io.jxcore.node.jxcore;
 
-public class JXCoreService extends Service implements Thread.UncaughtExceptionHandler {
+public class JXCoreService extends Service {
+    public static final String ACTION_STOP_JXCORE_SERVICE = "jxcore.action.UNBIND";
+    public static final String ACTION_JXCORE_SERVICE_STARTED = "jxcore.action.STARTED";
 
-    public static String LOG_TAG = "JXCore Service";
-    public static String path = "/app";
-    public static String readFileName = "app/streaming.js";
-    protected static ServiceConnection serverConn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder binder) {
-            Log.d(LOG_TAG, "onServiceConnected");
-        }
+    private static final String TAG = "JXCoreService";
 
+    protected JXcore mJxCore = null;
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.d(LOG_TAG, "onServiceDisconnected");
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case ACTION_STOP_JXCORE_SERVICE:
+                    stopJXCoreService();
+                    break;
+            }
         }
     };
 
     @Override
     public void onCreate() {
-
-        Thread.setDefaultUncaughtExceptionHandler(this);
-
         super.onCreate();
-        //create activity for jxcore
-        Intent intent = new Intent(this, ServiceActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-        startActivity(intent);
-        Log.w(JXCoreService.LOG_TAG, "Service Created");
+        init(getApplicationContext());
+        registerReceiver(mReceiver, new IntentFilter() {{
+            addAction(ACTION_STOP_JXCORE_SERVICE);
+        }});
     }
 
-    @Nullable
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
+    }
+
+    //@Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
 
-    public static void start(Context _context, String _path, String _readFileName) {
-        //check if process is already started
-        ActivityManager activityManager = (ActivityManager) _context.getSystemService( ACTIVITY_SERVICE );
-        List<ActivityManager.RunningAppProcessInfo> procInfos = activityManager.getRunningAppProcesses();
-        for(int i = 0; i < procInfos.size(); i++)
-        {
-            String processName = procInfos.get(i).processName;
-            if(processName.contains(":remoteJXCore"))
-            {
-                Log.i(LOG_TAG, "Process is already running:" + processName);
-                return;
-            }
-        }
+    protected void init(final Context context) {
+        if (mJxCore == null) {
+            mJxCore = new JXcore(context);
 
-        Log.i(LOG_TAG, "Starting JXCore Service");
+            // Example on how to add Java functions in JXCore
+            /*
+            mJxCore.addJavaMethod("out", new JXcore.JavaMethod() {
+                @Override
+                public void execute(String name, ArrayList<Object> params) {
+                    if (params.size() == 3) {
+                        try { // if you need you can add here your own callbacks
+                            Log.d(TAG, "from JS to Java: " + params.get(1) + " " + params.get(2));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Log.e(TAG, "unsuitable method signature");
+                    }
+                }
+            });
+            */
 
-        if (_path != null) {
-            path = _path;
-        }
-        if (_readFileName != null) {
-            readFileName = _readFileName;
-        }
+            // it runs when jxcore will be initialized
+            mJxCore.init(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "jxcore fully initialized");
+                    // Example on how to send something from Java to JXCore
+                    //mJxCore.callJSMethod("javaFunctions", mJxCore.getJavaMethodNames().toArray());
 
-        Intent serviceIntent = new Intent(_context, JXCoreService.class);
-        _context.bindService(serviceIntent, serverConn, Context.BIND_AUTO_CREATE);
-        _context.startService(serviceIntent);
+                    // Example on how to broadcast a message in Java when JXCore is started
+                    context.sendBroadcast(new Intent(ACTION_JXCORE_SERVICE_STARTED));
+                }
+            });
+        }
     }
 
-    public static void LogException(ContextWrapper context, Throwable ex){
-        SharedPreferences.Editor editor = context.getSharedPreferences("prefs.db", MODE_PRIVATE).edit();
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        String message = "Message: " + ex.getMessage() + " StackTrace: " + sw.toString();
-        editor.putString("uncaughtError", message);
-        editor.commit();
-        Log.i(LOG_TAG, "Exception logged");
+    /**
+     * JXCore requires a special care to stopping it
+     */
+    protected void stopJXCoreService() {
+        mJxCore.stop();
+        stopSelf();
+        System.runFinalization();
+        System.exit(0);
     }
 
-    @Override
-    public void uncaughtException(Thread thread, Throwable ex) {
-        LogException(this, ex);
-    }
 }
+
