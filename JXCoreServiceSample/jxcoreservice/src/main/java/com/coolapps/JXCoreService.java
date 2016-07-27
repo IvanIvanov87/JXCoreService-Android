@@ -23,7 +23,7 @@ import java.util.List;
 
 import io.jxcore.node.jxcore;
 
-public class JXCoreService extends Service implements Thread.UncaughtExceptionHandler {
+public class JXCoreService extends Service { // implements Thread.UncaughtExceptionHandler {
     public static final String ACTION_STOP_JXCORE_SERVICE = "jxcore.action.UNBIND";
     public static final String ACTION_JXCORE_SERVICE_STARTED = "jxcore.action.STARTED";
 
@@ -44,7 +44,7 @@ public class JXCoreService extends Service implements Thread.UncaughtExceptionHa
 
     @Override
     public void onCreate() {
-        Thread.setDefaultUncaughtExceptionHandler(this);
+        //Thread.setDefaultUncaughtExceptionHandler(this);
 
         super.onCreate();
         init(getApplicationContext());
@@ -102,6 +102,7 @@ public class JXCoreService extends Service implements Thread.UncaughtExceptionHa
         }
     }
 
+    /* not sure why but this might be a clue - http://stackoverflow.com/questions/31074585/androidruntime-shutting-down-vm-with-nothing-else
     public static void LogException(ContextWrapper context, Throwable ex){
         SharedPreferences.Editor editor = context.getSharedPreferences("prefs.db", MODE_PRIVATE).edit();
         StringWriter sw = new StringWriter();
@@ -117,6 +118,7 @@ public class JXCoreService extends Service implements Thread.UncaughtExceptionHa
     public void uncaughtException(Thread thread, Throwable ex) {
         LogException(this, ex);
     }
+    */
 
     /**
      * JXCore requires a special care to stopping it
